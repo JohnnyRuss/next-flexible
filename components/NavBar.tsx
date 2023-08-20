@@ -7,6 +7,7 @@ import Image from "next/image";
 
 import { NavLinks } from "@/constants";
 import AuthProviders from "@/components/AuthProviders";
+import ProfileMenu from "@/components/ProfileMenu";
 
 interface NavBarType {}
 
@@ -32,13 +33,7 @@ const NavBar: React.FC<NavBarType> = async () => {
       <div className="flexCenter gap-4">
         {session?.user ? (
           <>
-            <Image
-              src={session.user.image || ""}
-              width={40}
-              height={40}
-              className="rounded-full"
-              alt={session.user.name}
-            />
+            <ProfileMenu session={session} />
             <Link href={"/create-project"}>Share work</Link>
           </>
         ) : (

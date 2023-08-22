@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import { categoryFilters } from "@/constants";
+import { createProject } from "@/lib/actions";
 
 import FormField from "@/components/FormField";
 import CustomMenu from "@/components/CustomMenu";
@@ -17,6 +19,8 @@ interface ProjectFormType {
 }
 
 const ProjectForm: React.FC<ProjectFormType> = ({ type, session }) => {
+  const router = useRouter();
+
   const [form, setForm] = useState({
     image: "",
     title: "",
@@ -52,15 +56,22 @@ const ProjectForm: React.FC<ProjectFormType> = ({ type, session }) => {
     reader.onload = () => handleStateChange("image", reader.result as string);
   }
 
-  function handleFormSubmit(e: React.FormEvent) {
+  async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     setIsSubmitting(true);
 
     try {
       if (type === "create") {
+        await createProject({ form, creatorId: session.user.id });
+
+        router.push("/");
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -105,7 +116,7 @@ const ProjectForm: React.FC<ProjectFormType> = ({ type, session }) => {
       <FormField
         type="url"
         title="Website URL"
-        state={form.title}
+        state={form.liveSiteUrl}
         placeholder="https://example.com"
         setState={(value) => handleStateChange("liveSiteUrl", value)}
       />

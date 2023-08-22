@@ -3,6 +3,9 @@ import {
   getUserQuery,
   createUserMutation,
   createProjectMutation,
+  getAllProjectsQuery,
+  getProjectByIdQuery,
+  getProjectsOfUserQuery,
 } from "@/graphql";
 import { ProjectForm } from "@/common.types";
 
@@ -20,21 +23,28 @@ const serverURL = isProduction
 
 const client = new GraphQLClient(apiURL);
 
-const makeGraphQLRequest = async (query: string, variables = {}) => {
-  try {
-    return await client.request(query, variables);
-  } catch (error) {
-    throw error;
-  }
+//////////////////////
+// REQUEST HEADERS //
+////////////////////
+
+const SET_API_KEY_HEADER = () => client.setHeader("x-api-key", apiKEY);
+
+const SET_AUTHORIZATION_HEADER = async () => {
+  const { token } = await fetchToken();
+  client.setHeader("Authorization", `Bearer ${token}`);
 };
 
+///////////
+// USER //
+/////////
+
 const getUser = (email: string) => {
-  client.setHeader("x-api-key", apiKEY);
+  SET_API_KEY_HEADER();
   return makeGraphQLRequest(getUserQuery, { email });
 };
 
 const createUser = (email: string, name: string, avatarUrl: string) => {
-  client.setHeader("x-api-key", apiKEY);
+  SET_API_KEY_HEADER();
   return makeGraphQLRequest(createUserMutation, {
     input: {
       email,
@@ -43,6 +53,79 @@ const createUser = (email: string, name: string, avatarUrl: string) => {
     },
   });
 };
+
+///////////////
+// PROJECTS //
+/////////////
+
+const createProject = async ({
+  form,
+  creatorId,
+}: {
+  form: ProjectForm;
+  creatorId: string;
+}) => {
+  try {
+    SET_AUTHORIZATION_HEADER();
+
+    const { url } = await uploadImage(form.image);
+
+    if (url)
+      return makeGraphQLRequest(createProjectMutation, {
+        input: {
+          ...form,
+          image: url,
+          createdBy: {
+            link: creatorId,
+          },
+        },
+      });
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getAllProjects = async (args?: GetAllProjectsQueryT) => {
+  SET_API_KEY_HEADER();
+
+  const variables: GetAllProjectsQueryT = {
+    first: args?.first || 8,
+  };
+
+  if (args?.category) variables.category = args.category;
+  if (args?.endCursor) variables.endCursor = args.endCursor;
+
+  const queryStr = getAllProjectsQuery(variables);
+
+  return makeGraphQLRequest(queryStr, { ...variables });
+};
+
+const getProjectDetails = (args: { id: string }) => {
+  SET_API_KEY_HEADER();
+  return makeGraphQLRequest(getProjectByIdQuery, { id: args.id });
+};
+
+const getUserProjects = (args: { id: string; last?: number }) => {
+  SET_API_KEY_HEADER();
+  return makeGraphQLRequest(getProjectsOfUserQuery, {
+    id: args.id,
+    last: args.last,
+  });
+};
+
+//////////////////////
+export {
+  getUser,
+  createUser,
+  createProject,
+  getAllProjects,
+  getProjectDetails,
+  getUserProjects,
+};
+
+//////////////
+// HELPERS //
+////////////
 
 async function uploadImage(imagePath: string) {
   try {
@@ -57,27 +140,26 @@ async function uploadImage(imagePath: string) {
   }
 }
 
-const createProject = async ({
-  form,
-  creatorId,
-  token,
-}: {
-  form: ProjectForm;
-  creatorId: string;
-  token: string;
-}) => {
-  const imgUrl = await uploadImage(form.image);
+async function fetchToken() {
+  try {
+    return await (await fetch(`${serverURL}/api/auth/token`)).json();
+  } catch (error) {
+    throw error;
+  }
+}
 
-  if (imgUrl)
-    return makeGraphQLRequest(createProjectMutation, {
-      input: {
-        ...form,
-        image: imgUrl,
-        createdBy: {
-          link: creatorId,
-        },
-      },
-    });
-};
+async function makeGraphQLRequest(query: string, variables = {}) {
+  try {
+    return await client.request(query, variables);
+  } catch (error) {
+    throw error;
+  }
+}
 
-export { makeGraphQLRequest, getUser, createUser, createProject };
+/////////////////////////////
+
+export interface GetAllProjectsQueryT {
+  first?: number | null | undefined;
+  category?: string | null | undefined;
+  endCursor?: string | null | undefined;
+}

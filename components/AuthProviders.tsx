@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { getProviders, signIn } from "next-auth/react";
 
-import React from "react";
-
-interface AuthProvidersType {}
+import Button from "@/components/Button";
 
 interface ProviderT {
   id: string;
@@ -18,7 +16,7 @@ interface ProviderT {
 
 type ProvidersT = Record<string, ProviderT>;
 
-const AuthProviders: React.FC<AuthProvidersType> = (props) => {
+const AuthProviders: React.FC = () => {
   const [providers, setProviders] = useState<null | ProvidersT>(null);
 
   useEffect(() => {
@@ -32,14 +30,17 @@ const AuthProviders: React.FC<AuthProvidersType> = (props) => {
     return (
       <div>
         {Object.values(providers).map((provider: ProviderT) => (
-          <button key={provider.id} onClick={() => signIn(provider?.id)}>
-            Sign In With {provider.name}
-          </button>
+          <Button
+            type="button"
+            key={provider.id}
+            handleClick={() => signIn(provider?.id)}
+            title="Sign In"
+          />
         ))}
       </div>
     );
 
-  return <div>AuthProviders</div>;
+  return <></>;
 };
 
 export default AuthProviders;

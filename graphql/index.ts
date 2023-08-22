@@ -1,3 +1,5 @@
+import { GetAllProjectsQueryT } from "@/lib/actions";
+
 export const getUserQuery = `
   query GetUser($email:String!){
     user(by:{email:$email}){
@@ -30,45 +32,27 @@ export const createUserMutation = `
 
 export const createProjectMutation = `
   mutation ProjectCreate($input:ProjectCreateInput!){
-    createProject(input:$input){
-      id
-      title
-      description
-      createdBy{
-        email
-        name
+    projectCreate(input:$input){
+      project{
+        id
+        title
+        description
+        createdBy{
+          email
+          name
+        }
       }
     }
   }
 `;
 
-export const updateProjectMutation = `
-	mutation UpdateProject($id: ID!, $input: ProjectUpdateInput!) {
-		projectUpdate(by: { id: $id }, input: $input) {
-			project {
-				id
-				title
-				description
-				createdBy {
-					email
-					name
-				}
-			}
-		}
-	}
-`;
-
-export const deleteProjectMutation = `
-  mutation DeleteProject($id: ID!) {
-    projectDelete(by: { id: $id }) {
-      deletedId
-    }
-  }
-`;
-
-export const projectsQuery = `
-  query getProjects($category: String, $endCursor: String) {
-    projectSearch(first: 8, after: $endCursor, filter: {category: {eq: $category}}) {
+export const getAllProjectsQuery = (args: GetAllProjectsQueryT) => {
+  return `query getProjects(${args.category ? "$category: String" : ""}, ${
+    args.endCursor ? "$endCursor: String" : ""
+  }, $first: Int!) {
+    projectSearch(first: $first, ${
+      args.endCursor ? "after: $endCursor" : ""
+    }, ${args.category ? "filter: {category: {eq: $category}}" : ""}) {
       pageInfo {
         hasNextPage
         hasPreviousPage
@@ -95,6 +79,7 @@ export const projectsQuery = `
     }
   }
 `;
+};
 
 export const getProjectByIdQuery = `
   query GetProjectById($id: ID!) {
@@ -125,7 +110,7 @@ export const getProjectsOfUserQuery = `
       description
       avatarUrl
       githubUrl
-      linkedinUrl
+      linkedInUrl
       projects(last: $last) {
         edges {
           node {
@@ -135,6 +120,30 @@ export const getProjectsOfUserQuery = `
           }
         }
       }
+    }
+  }
+`;
+
+export const updateProjectMutation = `
+	mutation UpdateProject($id: ID!, $input: ProjectUpdateInput!) {
+		projectUpdate(by: { id: $id }, input: $input) {
+			project {
+				id
+				title
+				description
+				createdBy {
+					email
+					name
+				}
+			}
+		}
+	}
+`;
+
+export const deleteProjectMutation = `
+  mutation DeleteProject($id: ID!) {
+    projectDelete(by: { id: $id }) {
+      deletedId
     }
   }
 `;

@@ -6,7 +6,7 @@ interface ButtonType {
   type: "submit" | "button";
   leftIcon?: string | null;
   rightIcon?: string | null;
-  isSubmitting: boolean;
+  isSubmitting?: boolean;
   handleClick?: MouseEventHandler;
   bgColor?: string;
   textColor?: string;

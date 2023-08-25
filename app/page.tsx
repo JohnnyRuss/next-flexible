@@ -3,10 +3,13 @@ import { getAllProjects } from "@/lib/actions";
 
 import Categories from "@/components/Categories";
 import ProjectCard from "@/components/ProjectCard";
+import LoadMore from "@/components/LoadMore";
 
 import { ProjectInterface } from "@/common.types";
 
-interface HomeType {}
+interface HomeType {
+  searchParams: { category: string; end_cursor: string; start_cursor: string };
+}
 
 interface ProjectSearch {
   projectSearch: {
@@ -22,9 +25,22 @@ interface ProjectSearch {
   };
 }
 
-const Home: React.FC<HomeType> = async () => {
-  const data = (await getAllProjects()) as ProjectSearch;
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
+export const revalidate = 0;
+
+const Home: React.FC<HomeType> = async ({
+  searchParams: { category, start_cursor, end_cursor },
+}) => {
+  const data = (await getAllProjects({
+    category,
+    first: 3,
+    startCursor: start_cursor,
+    endCursor: end_cursor,
+  })) as ProjectSearch;
+
   const projectsToDisplay = data?.projectSearch?.edges || [];
+  const pageInfo = data?.projectSearch?.pageInfo;
 
   if (projectsToDisplay.length === 0)
     return (
@@ -39,7 +55,7 @@ const Home: React.FC<HomeType> = async () => {
 
   return (
     <section className="flexStart flex-col paddings mb-16">
-      <h1>categories</h1>
+      <Categories />
 
       <section className="projects-grid">
         {projectsToDisplay.map(({ node: project }) => (
@@ -55,7 +71,12 @@ const Home: React.FC<HomeType> = async () => {
         ))}
       </section>
 
-      <h1>load more</h1>
+      <LoadMore
+        startCursor={pageInfo?.startCursor}
+        endCursor={pageInfo.endCursor}
+        hasPreviousPage={pageInfo.hasPreviousPage}
+        hasNextPage={pageInfo.hasNextPage}
+      />
     </section>
   );
 };

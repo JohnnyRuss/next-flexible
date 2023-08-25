@@ -37,14 +37,14 @@ const ProjectCard: React.FC<ProjectCardType> = ({
     <div className="flexCenter flex-col rounded-2xl drop-shadow-card">
       <Link
         href={`/project/${id}`}
-        className="flexCenter group relative w-full h-full"
+        className="flexCenter group relative w-full h-full rounded-2xl overflow-hidden"
       >
         <Image
           src={image}
           width={414}
           height={314}
           alt={title}
-          className="max-w-[414px] max-h-[314px] object-cover object-top rounded-2xl"
+          className="max-w-[414px] max-h-[314px] w-full h-full object-cover object-top"
         />
 
         <div className="hidden group-hover:flex profile_card-title">

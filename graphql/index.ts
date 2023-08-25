@@ -47,12 +47,18 @@ export const createProjectMutation = `
 `;
 
 export const getAllProjectsQuery = (args: GetAllProjectsQueryT) => {
-  return `query getProjects(${args.category ? "$category: String" : ""}, ${
-    args.endCursor ? "$endCursor: String" : ""
-  }, $first: Int!) {
-    projectSearch(first: $first, ${
-      args.endCursor ? "after: $endCursor" : ""
-    }, ${args.category ? "filter: {category: {eq: $category}}" : ""}) {
+  const queryArgsStr = `${args.category ? "$category:String" : ""},${
+    args.startCursor ? "$startCursor: String" : ""
+  },${args.endCursor ? "$endCursor: String" : ""}, $first: Int!`;
+
+  const queryStr = `${
+    !args.startCursor && !args.endCursor ? "first:$first" : ""
+  }, ${args.startCursor ? "first:$first, after:$startCursor" : ""}, ${
+    args.endCursor ? "last:$first, before: $endCursor" : ""
+  },${args.category ? "filter: {category: {eq: $category}}" : ""}`;
+
+  return `query getProjects(${queryArgsStr}) 
+  {projectSearch(${queryStr}) {
       pageInfo {
         hasNextPage
         hasPreviousPage

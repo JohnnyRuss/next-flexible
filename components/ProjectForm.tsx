@@ -5,29 +5,30 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { categoryFilters } from "@/constants";
-import { createProject } from "@/lib/actions";
+import { createProject, updateProject } from "@/lib/actions";
 
 import FormField from "@/components/FormField";
 import CustomMenu from "@/components/CustomMenu";
 import Button from "@/components/Button";
 
-import { SessionInterface } from "@/common.types";
+import { ProjectInterface, SessionInterface } from "@/common.types";
 
 interface ProjectFormType {
-  type: "create" | "update";
+  type: "create" | "edit";
   session: SessionInterface;
+  project?: ProjectInterface;
 }
 
-const ProjectForm: React.FC<ProjectFormType> = ({ type, session }) => {
+const ProjectForm: React.FC<ProjectFormType> = ({ type, session, project }) => {
   const router = useRouter();
 
   const [form, setForm] = useState({
-    image: "",
-    title: "",
-    description: "",
-    liveSiteUrl: "",
-    githubUrl: "",
-    category: "",
+    image: project?.image || "",
+    title: project?.title || "",
+    description: project?.description || "",
+    liveSiteUrl: project?.liveSiteUrl || "",
+    githubUrl: project?.githubUrl || "",
+    category: project?.category || "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,11 +63,12 @@ const ProjectForm: React.FC<ProjectFormType> = ({ type, session }) => {
     setIsSubmitting(true);
 
     try {
-      if (type === "create") {
+      if (type === "create")
         await createProject({ form, creatorId: session.user.id });
+      else if (type === "edit" && project)
+        await updateProject({ form, projectId: project.id! });
 
-        router.push("/");
-      }
+      router.push("/");
     } catch (error) {
       console.log(error);
     } finally {

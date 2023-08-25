@@ -39,13 +39,13 @@ const RelatedProjects: React.FC<RelatedProjectsType> = async ({
           <div className="flexCenter related_project-card drop-shadow-card">
             <Link
               href={`/project/${node?.id}`}
-              className="flexCenter group relative w-full h-full"
+              className="flexCenter group relative w-full h-full rounded-2xl overflow-hidden"
             >
               <Image
                 src={node?.image}
                 width={414}
                 height={314}
-                className="max-w-[414px] max-h-[314px] object-cover object-top rounded-2xl"
+                className="max-w-[414px] max-h-[314px] w-full h-full object-cover object-top"
                 alt="project image"
               />
 

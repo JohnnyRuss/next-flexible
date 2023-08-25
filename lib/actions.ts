@@ -6,6 +6,8 @@ import {
   getAllProjectsQuery,
   getProjectByIdQuery,
   getProjectsOfUserQuery,
+  deleteProjectMutation,
+  updateProjectMutation,
 } from "@/graphql";
 import { ProjectForm } from "@/common.types";
 
@@ -66,7 +68,7 @@ const createProject = async ({
   creatorId: string;
 }) => {
   try {
-    SET_AUTHORIZATION_HEADER();
+    await SET_AUTHORIZATION_HEADER();
 
     const { url } = await uploadImage(form.image);
 
@@ -93,6 +95,7 @@ const getAllProjects = async (args?: GetAllProjectsQueryT) => {
   };
 
   if (args?.category) variables.category = args.category;
+  if (args?.startCursor) variables.startCursor = args.startCursor;
   if (args?.endCursor) variables.endCursor = args.endCursor;
 
   const queryStr = getAllProjectsQuery(variables);
@@ -113,6 +116,38 @@ const getUserProjects = (args: { id: string; last?: number }) => {
   });
 };
 
+const deleteProject = async (args: { id: string }) => {
+  await SET_AUTHORIZATION_HEADER();
+
+  return makeGraphQLRequest(deleteProjectMutation, { id: args.id });
+};
+
+const updateProject = async (args: {
+  form: ProjectForm;
+  projectId: string;
+}) => {
+  await SET_AUTHORIZATION_HEADER();
+
+  function isBase64DataURL(value: string) {
+    const base64Regex = /^data:image\/[a-z]+;base64,/;
+    return base64Regex.test(value);
+  }
+
+  let updatedForm = { ...args.form };
+
+  const isUploadingNewImage = isBase64DataURL(args.form.image);
+
+  if (isUploadingNewImage) {
+    const { url } = await uploadImage(args.form.image);
+    if (url) updatedForm = { ...updatedForm, image: url };
+  }
+
+  return makeGraphQLRequest(updateProjectMutation, {
+    input: updatedForm,
+    id: args.projectId,
+  });
+};
+
 //////////////////////
 export {
   getUser,
@@ -121,13 +156,15 @@ export {
   getAllProjects,
   getProjectDetails,
   getUserProjects,
+  deleteProject,
+  updateProject,
 };
 
 //////////////
 // HELPERS //
 ////////////
 
-async function uploadImage(imagePath: string) {
+async function uploadImage(imagePath: string): Promise<{ url: string }> {
   try {
     return await (
       await fetch(`${serverURL}/api/upload`, {
@@ -161,5 +198,6 @@ async function makeGraphQLRequest(query: string, variables = {}) {
 export interface GetAllProjectsQueryT {
   first?: number | null | undefined;
   category?: string | null | undefined;
+  startCursor?: string | null | undefined;
   endCursor?: string | null | undefined;
 }

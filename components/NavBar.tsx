@@ -21,7 +21,7 @@ const NavBar: React.FC<NavBarType> = async () => {
           <Image src={"/logo.svg"} width={115} height={43} alt="Flexible" />
         </Link>
 
-        <ul className="xl:flex hidden text-sm gap-7">
+        <ul className="xl:flex hidden text-sm gap-7 mt-2">
           {NavLinks.map((link) => (
             <Link key={link.key} href={link.href}>
               {link.text}

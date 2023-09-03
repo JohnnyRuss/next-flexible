@@ -34,13 +34,8 @@ const authOptions: NextAuthOptions = {
     },
   },
 
-  theme: {
-    colorScheme: "light",
-    // logo: "/logo.png",
-  },
-
   callbacks: {
-    async session({ session }) {
+    async session({ session, token }) {
       const email = session?.user?.email as string;
 
       try {
@@ -83,6 +78,11 @@ const authOptions: NextAuthOptions = {
         return false;
       }
     },
+  },
+
+  theme: {
+    colorScheme: "light",
+    // logo: "/logo.png",
   },
 };
 

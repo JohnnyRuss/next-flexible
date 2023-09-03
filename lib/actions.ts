@@ -16,9 +16,11 @@ const isProduction = process.env.NODE_ENV === "production";
 const apiURL = isProduction
   ? process.env.NEXT_PUBLIC_GRAFBASE_API_URL || ""
   : "http://127.0.0.1:4000/graphql";
+
 const apiKEY = isProduction
-  ? process.env.NEXT_PUBLIC_GRAFBASE_API_KEY || ""
-  : "1234";
+  ? process.env.NEXT_PUBLIC_GRAFBASE_API_KEY_PROD
+  : process.env.NEXT_PUBLIC_GRAFBASE_API_KEY || "1234";
+
 const serverURL = isProduction
   ? process.env.NEXT_PUBLIC_SERVER_URL || ""
   : "http://localhost:3000";
@@ -29,7 +31,7 @@ const client = new GraphQLClient(apiURL);
 // REQUEST HEADERS //
 ////////////////////
 
-const SET_API_KEY_HEADER = () => client.setHeader("x-api-key", apiKEY);
+const SET_API_KEY_HEADER = () => client.setHeader("x-api-key", apiKEY || "");
 
 const SET_AUTHORIZATION_HEADER = async () => {
   const { token } = await fetchToken();

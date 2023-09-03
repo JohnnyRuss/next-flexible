@@ -27,7 +27,7 @@ interface ProjectSearch {
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
-export const revalidate = 0;
+export const revalidate = true;
 
 const Home: React.FC<HomeType> = async ({
   searchParams: { category, start_cursor, end_cursor },
